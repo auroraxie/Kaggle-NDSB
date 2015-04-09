@@ -1,0 +1,223 @@
+# Configuration for ImageNet
+# Acknowledgement:
+#  Ref: http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf
+#  The scheduling parameters is adapted from Caffe(http://caffe.berkeleyvision.org/)
+
+pred = %PRED%
+iter = imgbin
+  image_list = "../data/test.lst"
+  image_bin  = "../data/test.bin"
+  image_mean = "models/image_mean.bin"
+  rand_mirror=1
+  rand_crop=1
+  max_aspect_ratio = 0.2
+  max_rotate_angle=180
+  max_shear_ratio=0.1
+  min_crop_size=70
+  max_crop_size=70
+  min_random_scale = 0.75
+  max_random_scale = 1.25
+  min_img_size = 80
+  max_img_size = 120
+iter = threadbuffer
+iter = end
+
+task = extract
+extract_node_name = top[-1]
+output_format = txt
+
+
+model_in = ./models/0500.model
+
+netconfig=start
+layer[0->1] = conv
+  kernel_size = 3
+  stride = 1
+  nchannel = 16
+layer[1->2] = conv
+  kernel_size = 3
+  stride = 1
+  nchannel = 16
+layer[2->3] = insanity
+layer[3->4] = max_pooling
+  kernel_size = 3
+  stride = 1
+layer[4->5] = conv
+  nchannel = 32
+  stride = 2
+  kernel_size = 2
+  init_bias = 1
+  pad = 1
+layer[5->6] = insanity
+layer[6->7] = conv
+  nchannel = 32
+  stride = 1
+  kernel_size = 2
+layer[7->8] = insanity
+layer[8->9] = conv
+  nchannel = 64
+  stride = 1
+  kernel_size = 2
+  pad = 1
+layer[9->10] = insanity
+layer[10->11] = conv
+  nchannel = 64
+  stride = 1
+  kernel_size = 2
+layer[11->12] = insanity
+layer[12->12.1] = conv
+  nchannel = 96
+  stride = 1
+  kernel_size = 2
+  pad = 1
+layer[12.1->13.1] = insanity
+layer[13.1->14.1] = conv
+  nchannel = 96
+  stride = 1
+  kernel_size = 2
+layer[14.1->15.1] = insanity
+layer[15.1->13.0,14.0] = split
+layer[14.0->15.0] = flatten
+layer[15.0->16.0] = fullc
+  nhidden =121
+layer[16.0->16.0] = softmax
+  grad_scale = 0.01
+layer[13.0->17.0] = max_pooling
+  kernel_size = 3
+  stride = 1
+  pad = 1
+#############
+layer[17.0->14] = conv
+  nchannel = 128
+  kernel_size = 2
+  stride = 2
+  pad = 1
+layer[14->15] = insanity
+layer[15->16] = conv
+  nchannel = 128
+  kernel_size = 2
+  stride = 1
+layer[16->17] = insanity
+layer[17->18] = conv
+  nchannel = 128
+  kernel_size = 2
+  stride = 1
+  pad = 1
+layer[18->19] = insanity
+layer[19->20] = conv
+  nchannel = 128
+  kernel_size = 2
+  stride = 1
+layer[20->21] = insanity
+layer[21->22] = conv
+  nchannel = 128
+  kernel_size = 2
+  stride = 1
+  pad = 1
+layer[22->23] = insanity
+layer[23->24] = conv
+  nchannel = 128
+  kernel_size = 2
+  stride = 1
+layer[24->25,26] = split
+layer[25->27] = flatten
+layer[27->28] = fullc
+  nhidden =121
+layer[28->28] = softmax
+  grad_scale = 0.01
+layer[26->29] = max_pooling
+  kernel_size = 3
+  stride = 1
+#############
+layer[29->30] = conv
+  nchannel = 256
+  kernel_size = 2
+  stride = 2
+  pad = 1
+layer[30->31] = insanity
+layer[31->32] = conv
+  nchannel = 256
+  kernel_size = 2
+  stride = 1
+layer[32->33] = insanity
+layer[33->34] = conv
+  nchannel = 256
+  kernel_size = 2
+  stride = 1
+  pad = 1
+layer[34->35] = insanity
+layer[35->36] = conv
+  nchannel = 256
+  kernel_size = 2
+  stride = 1
+layer[36->37] = insanity
+layer[37->38,39,40] = split
+layer[38->41] = max_pooling
+  kernel_size = 1
+  stride = 1
+layer[39->42] = max_pooling
+  kernel_size = 3
+  stride = 3
+layer[40->43] = max_pooling
+  kernel_size = 6
+  stride = 6
+layer[41->44] = flatten
+layer[42->45] = flatten
+layer[43->46] = flatten
+layer[44,45,46->47] = concat
+layer[47->47] = dropout
+  threshold = 0.5
+layer[+1] = fullc
+  nhidden = 1024
+layer[+1] = insanity
+layer[+0] = dropout
+  threshold = 0.5
+layer[+1] = fullc
+  nhidden = 1024
+layer[+1] = insanity
+layer[+0] = dropout
+  threshold = 0.5
+layer[+1] = fullc
+  nhidden =121
+layer[+0] = softmax
+netconfig=end
+
+
+lb = 3
+ub = 8
+seed = 20150309
+seed_data = %SEED%
+#device
+dev = %GPU%
+continue = 0
+# evaluation metric
+metric = error
+metric = logloss
+print_step = 1
+max_round = 400
+num_round = 400
+updater = sgd
+# input shape not including batch
+input_shape = 3,70,70
+
+batch_size = 96
+# global parameters in any sectiion outside netconfig, and iter
+momentum = 0.90
+wmat:lr  = 0.01
+wmat:wd  = 0.0005
+
+bias:wd  = 0.000
+bias:lr  = 0.02
+
+minimum_lr = 0.00004
+# all the learning rate schedule starts with lr
+lr:schedule = factor
+lr:factor = 0.1
+lr:step = 110600
+
+save_model=1
+model_dir=models
+# random config
+random_type = xavier
+
+# new line
