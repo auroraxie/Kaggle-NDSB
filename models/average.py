@@ -8,7 +8,7 @@ fc = csv.reader(file(sys.argv[3]))
 fd = csv.reader(file(sys.argv[4]))
 fe = csv.reader(file(sys.argv[5]))
 ff = csv.reader(file(sys.argv[6]))
-fo = csv.writer(open(sys.argv[8], "w"), lineterminator='\n')
+fo = csv.writer(open(sys.argv[7], "w"), lineterminator='\n')
 
 head = fa.next()
 fb.next()
